@@ -1,0 +1,361 @@
+{
+  "name": "Smart Lead Intake → Qualification → Instant Notification",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "7fabc568-30ee-45c6-a88b-3b9232de21b9",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "59703cb2-7151-46a1-96d0-2fb1e3570580",
+      "name": "Webhook",
+      "webhookId": "7fabc568-30ee-45c6-a88b-3b9232de21b9"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "79b90eb5-07bc-4948-a463-94110b7db22a",
+              "name": "lead_name",
+              "value": "={{ $json.body.name }}",
+              "type": "string"
+            },
+            {
+              "id": "aa5c69d6-f5ae-4d8b-b662-cab114eda520",
+              "name": "lead_email",
+              "value": "={{ $json.body.email }}",
+              "type": "string"
+            },
+            {
+              "id": "b601eb98-6cfe-482d-b5d5-713c698457ba",
+              "name": "lead_company",
+              "value": "={{ $json.body.company }}",
+              "type": "string"
+            },
+            {
+              "id": "d7512402-cd98-4c8c-9ff3-3470be3e191a",
+              "name": "lead_message",
+              "value": "={{ $json.body.message }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "a474e806-a5cf-4c8f-9d07-013f0267ea02",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "let score = 0;\n\nconst email = $json.lead_email || \"\";\nconst message = $json.lead_message || \"\";\nconst company = $json.lead_company || \"\";\n\nif (!email.includes(\"gmail\") && !email.includes(\"yahoo\")) score += 10;\nif (company !== \"N/A\") score += 5;\nif (message.length > 20) score += 5;\n\nreturn [{\n  json: {\n    ...$json,\n    lead_score: score,\n    is_hot: score >= 15\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "3822359a-c9a2-4b35-9645-556e9341da69",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "4ddb2ca6-6f51-44ab-938d-7e1a1df11924",
+              "leftValue": "={{ $json.is_hot }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        608,
+        16
+      ],
+      "id": "1660703f-6b3a-4445-a031-3fcfe5dc68f8",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "sendTo": "syedirtaza193@gmail.com",
+        "subject": "=Hot Lead: {{$json.lead_company}}",
+        "emailType": "text",
+        "message": "=New qualified lead received!\n\nName:\n{{$json.lead_name}}\n\nEmail:\n{{$json.lead_email}}\n\nCompany:\n{{$json.lead_company}}\n\nLead Score:\n{{$json.lead_score}}\n\nMessage:\n{{$json.lead_message}}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        816,
+        -96
+      ],
+      "id": "201c8210-d5d0-4c23-baa4-d1e18c8e3c54",
+      "name": "Send a message",
+      "webhookId": "0b21f8b5-318e-459b-bbd9-a4289d137e40",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "FvmhVyCgEUh4G43I",
+          "name": "syedirtaza193"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        816,
+        128
+      ],
+      "id": "637769ec-b37c-4fbc-b711-0e8fb0671eb4",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1W4n7CuYiJToN8eKJtEKr86Y-Pvukm10HN2y-G88sWxo",
+          "mode": "list",
+          "cachedResultName": "Smart Lead Intake → Qualification → Instant Notification",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W4n7CuYiJToN8eKJtEKr86Y-Pvukm10HN2y-G88sWxo/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1W4n7CuYiJToN8eKJtEKr86Y-Pvukm10HN2y-G88sWxo/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "NAME": "={{ $('If').item.json.lead_name }}",
+            "EMAIL": "={{ $('If').item.json.lead_email }}",
+            "COMPANY": "={{ $('If').item.json.lead_company }}",
+            "SCORE": "={{ $('If').item.json.lead_score }}",
+            "HOT": "={{ $('If').item.json.is_hot }}",
+            "DATE": "{{$now}}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "NAME",
+              "displayName": "NAME",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "EMAIL",
+              "displayName": "EMAIL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "COMPANY",
+              "displayName": "COMPANY",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SCORE",
+              "displayName": "SCORE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "HOT",
+              "displayName": "HOT",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "DATE",
+              "displayName": "DATE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1088,
+        0
+      ],
+      "id": "043092e3-247c-415b-b348-c6c02658cd3f",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "1MWyNFuWD5D2WUOA",
+          "name": "SYEDIRTAZA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1328,
+        0
+      ],
+      "id": "35f75e69-c412-4a91-b349-d44707bcffc8",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No Operation, do nothing": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "36ffc7a4-f114-438a-b242-b2b4c5ba0a55",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e1f3479734287d0defe2926f4e0f2924a43220e1c1cc8063b3a183f42832b660"
+  },
+  "id": "r9vVZUYE1ILXFr317kz03",
+  "tags": []
+}
